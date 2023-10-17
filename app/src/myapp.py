@@ -21,8 +21,8 @@ from sdv.util.log import (  # type: ignore
     get_opentelemetry_log_factory,
     get_opentelemetry_log_format,
 )
-from sdv.vdb.reply import DataPointReply  # type: ignore
-from sdv.vehicle_app import VehicleApp, subscribe_topic  # type: ignore
+from velocitas_sdk.vdb.reply import DataPointReply  # type: ignore
+from velocitas_sdk.vehicle_app import VehicleApp, subscribe_topic  # type: ignore
 from vehicle import Vehicle  # type: ignore
 
 logging.setLogRecordFactory(get_opentelemetry_log_factory())
