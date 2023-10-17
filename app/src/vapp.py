@@ -1,4 +1,4 @@
-# Copyright (c) 2022 Robert Bosch GmbH and Microsoft Corporation
+# Copyright (c) 2022-2023 Robert Bosch GmbH and Microsoft Corporation
 #
 # This program and the accompanying materials are made available under the
 # terms of the Apache License, Version 2.0 which is available at
@@ -17,13 +17,13 @@
 import json
 import logging
 
-from sdv.util.log import (  # type: ignore
+from vehicle import Vehicle  # type: ignore
+from velocitas_sdk.util.log import (  # type: ignore
     get_opentelemetry_log_factory,
     get_opentelemetry_log_format,
 )
-from velocitas_sdk.vdb.reply import DataPointReply  # type: ignore
-from velocitas_sdk.vehicle_app import VehicleApp, subscribe_topic  # type: ignore
-from vehicle import Vehicle  # type: ignore
+from velocitas_sdk.vdb.reply import DataPointReply
+from velocitas_sdk.vehicle_app import VehicleApp, subscribe_topic
 
 logging.setLogRecordFactory(get_opentelemetry_log_factory())
 logging.basicConfig(format=get_opentelemetry_log_format())
@@ -34,6 +34,14 @@ logger = logging.getLogger(__name__)
 class SeatAdjusterApp(VehicleApp):
     """
     Sample Velocitas Vehicle App.
+
+    The SeatAdjusterApp subscribes to a MQTT topic to listen for incoming
+    requests to change the seat position and calls the SeatService to move the seat
+    upon such a request, but only if Vehicle.Speed equals 0.
+
+    It also subcribes to the VehicleDataBroker for updates of the
+    Vehicle.Cabin.Seat.Row1.Pos1.Position signal and publishes this
+    information via another specific MQTT topic
     """
 
     def __init__(self, vehicle_client: Vehicle):
@@ -57,6 +65,7 @@ class SeatAdjusterApp(VehicleApp):
 
     @subscribe_topic("seatadjuster/setPosition/request")
     async def on_set_position_request_received(self, data_str: str) -> None:
+        logger.info(f"Got message: {data_str!r}")
         data = json.loads(data_str)
         response_topic = "seatadjuster/setPosition/response"
         response_data = {"requestId": data["requestId"], "result": {}}
